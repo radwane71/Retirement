@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإعدادات - Retirement Hub</title>
+    
+    <script src="assets/js/auth.js"></script>
+    <script>
+        authManager.protectPage();
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 900: '#001529', 800: '#001f3f', 700: '#002b55', 600: '#003366' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background-color: #001f3f; color: #f3f4f6; }
+        
+        .input-premium { 
+            @apply bg-navy-800 border border-navy-600 rounded-2xl p-4 text-base text-white w-full transition-all duration-300 font-bold;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .input-premium:focus { 
+            @apply border-blue-500 bg-navy-700 ring-4 ring-blue-500/10 outline-none;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #003366; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <nav class="bg-navy-900 border-b border-navy-600 p-4 mb-8 flex flex-col md:flex-row justify-between items-center rounded-2xl shadow-2xl">
+        <div class="flex items-center gap-3 mb-4 md:mb-0">
+            <div class="bg-blue-600 p-2 rounded-lg text-xl shadow-lg">💼</div>
+            <h1 class="text-2xl font-bold text-white uppercase tracking-wider">Retirement <span class="text-blue-400 font-light text-lg">Hub</span></h1>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4 text-sm font-medium">
+            <a href="index.html" class="px-4 py-2 hover:text-blue-400 transition">الرئيسية 🏠</a>
+            <a href="trade-log.html" class="px-4 py-2 hover:text-blue-400 transition">سجل التداول 📝</a>
+            <a href="dividends.html" class="px-4 py-2 hover:text-blue-400 transition">التوزيعات 💵</a>
+            <a href="investment-roadmap.html" class="px-4 py-2 hover:text-blue-400 transition">خارطة الطريق 🗺️</a>
+            <a href="settings.html" class="px-4 py-2 text-blue-400 border-b-2 border-blue-400 pb-1">الإعدادات ⚙️</a>
+        </div>
+    </nav>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-blue-300 text-xs font-bold uppercase tracking-widest">عمليات التداول 📝</span>
+            <div class="text-3xl font-black text-white mt-1"><span id="stat-trades">0</span></div>
+        </div>
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-green-400 text-xs font-bold uppercase tracking-widest">سجلات التوزيعات 💵</span>
+            <div class="text-3xl font-black text-white mt-1"><span id="stat-dividends">0</span></div>
+        </div>
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-amber-400 text-xs font-bold uppercase tracking-widest">خطط الضخ 🗺️</span>
+            <div class="text-3xl font-black text-white mt-1"><span id="stat-roadmap">0</span></div>
+        </div>
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-purple-400 text-xs font-bold uppercase tracking-widest">حجم البيانات 💾</span>
+            <div class="text-xl font-black text-white mt-1"><span id="stat-size">0 KB</span></div>
+        </div>
+    </div>
+
+    <!-- Export Section -->
+    <div class="bg-navy-900 border border-navy-600 rounded-[2.5rem] shadow-2xl overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-green-900/30 to-navy-800 p-6 border-b border-navy-600">
+            <div class="flex items-center gap-4">
+                <div class="bg-green-600/20 p-3 rounded-2xl text-green-400 text-2xl">📥</div>
+                <div>
+                    <h2 class="font-black text-xl text-white">تصدير البيانات الكاملة</h2>
+                    <p class="text-[10px] text-green-300/60 font-bold uppercase tracking-[0.2em]">FULL DATA EXPORT</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-8">
+            <p class="text-gray-400 mb-6 text-sm leading-relaxed">
+                تصدير كامل بيانات المحفظة (سجل التداول، التوزيعات، خارطة الطريق) في ملف JSON واحد. 
+                احفظ الملف في مكان آمن لاستخدامه لاحقاً.
+            </p>
+            <button onclick="exportAllData()" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-5 rounded-[1.5rem] shadow-[0_10px_30px_-10px_rgba(22,163,74,0.5)] transition-all duration-300 transform active:scale-[0.97] flex items-center justify-center gap-3 text-lg">
+                تحميل ملف النسخة الاحتياطية الكاملة 📥
+            </button>
+        </div>
+    </div>
+
+    <!-- Import Section -->
+    <div class="bg-navy-900 border border-navy-600 rounded-[2.5rem] shadow-2xl overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-blue-900/30 to-navy-800 p-6 border-b border-navy-600">
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-600/20 p-3 rounded-2xl text-blue-400 text-2xl">📤</div>
+                <div>
+                    <h2 class="font-black text-xl text-white">استيراد البيانات</h2>
+                    <p class="text-[10px] text-blue-300/60 font-bold uppercase tracking-[0.2em]">RESTORE FROM BACKUP</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-8">
+            <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 mb-6">
+                <p class="text-red-400 text-sm font-bold flex items-center gap-2">
+                    ⚠️ تحذير: استيراد البيانات سيستبدل جميع البيانات الحالية بالكامل!
+                </p>
+            </div>
+            <input type="file" id="importFile" accept=".json" class="hidden">
+            <button onclick="document.getElementById('importFile').click()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-[1.5rem] shadow-[0_10px_30px_-10px_rgba(37,99,235,0.5)] transition-all duration-300 transform active:scale-[0.97] flex items-center justify-center gap-3 text-lg">
+                اختيار ملف JSON للاستيراد 📤
+            </button>
+        </div>
+    </div>
+
+    <!-- Server Backup Section -->
+    <div class="bg-navy-900 border border-navy-600 rounded-[2.5rem] shadow-2xl overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-purple-900/30 to-navy-800 p-6 border-b border-navy-600">
+            <div class="flex items-center gap-4">
+                <div class="bg-purple-600/20 p-3 rounded-2xl text-purple-400 text-2xl">☁️</div>
+                <div>
+                    <h2 class="font-black text-xl text-white">النسخ الاحتياطية على السيرفر</h2>
+                    <p class="text-[10px] text-purple-300/60 font-bold uppercase tracking-[0.2em]">SERVER BACKUPS</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-8">
+            <button onclick="createServerBackup()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-[1.5rem] mb-6 shadow-lg transition-all duration-300 transform active:scale-[0.97] flex items-center justify-center gap-3">
+                إنشاء نسخة احتياطية جديدة على السيرفر ☁️
+            </button>
+            
+            <div id="backups-list" class="space-y-3">
+                <p class="text-gray-500 text-center text-sm">جاري التحميل...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="bg-navy-900 border-2 border-red-500/30 rounded-[2.5rem] shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-red-900/30 to-navy-800 p-6 border-b border-red-500/30">
+            <div class="flex items-center gap-4">
+                <div class="bg-red-600/20 p-3 rounded-2xl text-red-400 text-2xl">🗑️</div>
+                <div>
+                    <h2 class="font-black text-xl text-red-400">منطقة الخطر</h2>
+                    <p class="text-[10px] text-red-300/60 font-bold uppercase tracking-[0.2em]">DANGER ZONE</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-8">
+            <p class="text-red-400/80 mb-6 text-sm leading-relaxed font-bold">
+                حذف كامل البيانات من المتصفح. هذا الإجراء لا يمكن التراجع عنه!
+            </p>
+            <button onclick="deleteAllData()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white border-2 border-red-500/50 font-black py-4 rounded-[1.5rem] transition-all duration-300 transform active:scale-[0.97] flex items-center justify-center gap-3">
+                حذف كافة البيانات نهائياً 🗑️
+            </button>
+        </div>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script>
+        // تحميل الإحصائيات
+        function loadStats() {
+            const trades = JSON.parse(localStorage.getItem('myTrades')) || [];
+            const dividends = JSON.parse(localStorage.getItem('myDividends')) || [];
+            const roadmap = JSON.parse(localStorage.getItem('investmentRoadmap')) || [];
+
+            document.getElementById('stat-trades').textContent = trades.length;
+            document.getElementById('stat-dividends').textContent = dividends.length;
+            document.getElementById('stat-roadmap').textContent = roadmap.length;
+
+            const totalSize = (JSON.stringify(trades).length + JSON.stringify(dividends).length + JSON.stringify(roadmap).length) / 1024;
+            document.getElementById('stat-size').textContent = totalSize.toFixed(2) + ' KB';
+        }
+
+        // تصدير البيانات
+        async function exportAllData() {
+            try {
+                const trades = JSON.parse(localStorage.getItem('myTrades')) || [];
+                const dividends = JSON.parse(localStorage.getItem('myDividends')) || [];
+                const roadmap = JSON.parse(localStorage.getItem('investmentRoadmap')) || [];
+
+                await apiManager.exportData(trades, dividends, roadmap);
+                
+                alert('✅ تم تحميل الملف بنجاح!');
+            } catch (error) {
+                alert('❌ فشل تصدير البيانات: ' + error.message);
+            }
+        }
+
+        // استيراد البيانات
+        document.getElementById('importFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const jsonData = JSON.parse(text);
+
+                const result = await apiManager.importData(jsonData);
+
+                if (result.success) {
+                    // حفظ البيانات في localStorage
+                    localStorage.setItem('myTrades', JSON.stringify(result.data.trades || []));
+                    localStorage.setItem('myDividends', JSON.stringify(result.data.dividends || []));
+                    localStorage.setItem('investmentRoadmap', JSON.stringify(result.data.roadmap || []));
+
+                    alert('✅ تم استيراد البيانات بنجاح!\n\nسيتم تحديث الصفحة...');
+                    location.reload();
+                } else {
+                    alert('❌ فشل الاستيراد: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ ملف JSON غير صالح أو تالف!');
+            }
+
+            e.target.value = '';
+        });
+
+        // إنشاء نسخة احتياطية على السيرفر
+        async function createServerBackup() {
+            try {
+                const trades = JSON.parse(localStorage.getItem('myTrades')) || [];
+                const dividends = JSON.parse(localStorage.getItem('myDividends')) || [];
+                const roadmap = JSON.parse(localStorage.getItem('investmentRoadmap')) || [];
+
+                const result = await apiManager.createBackup(trades, dividends, roadmap);
+
+                if (result.success) {
+                    alert('✅ تم حفظ النسخة الاحتياطية على السيرفر بنجاح!');
+                    loadBackupsList();
+                } else {
+                    alert('❌ فشل الحفظ: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ خطأ في الاتصال بالسيرفر');
+            }
+        }
+
+        // تحميل قائمة النسخ الاحتياطية
+        async function loadBackupsList() {
+            try {
+                const result = await apiManager.listBackups();
+                const container = document.getElementById('backups-list');
+
+                if (result.success && result.backups.length > 0) {
+                    container.innerHTML = result.backups.map(backup => {
+                        const date = new Date(backup.timestamp);
+                        return `
+                            <div class="bg-navy-800 p-4 rounded-2xl border border-navy-600 flex justify-between items-center">
+                                <div>
+                                    <p class="text-white font-bold text-sm">${backup.filename}</p>
+                                    <p class="text-gray-500 text-xs">${date.toLocaleString('ar-EG')}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="restoreBackup('${backup.filename}')" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                                        استعادة
+                                    </button>
+                                    <button onclick="deleteBackup('${backup.filename}')" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                                        حذف
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center text-sm">لا توجد نسخ احتياطية</p>';
+                }
+            } catch (error) {
+                document.getElementById('backups-list').innerHTML = '<p class="text-red-500 text-center text-sm">فشل تحميل القائمة</p>';
+            }
+        }
+
+        // استعادة نسخة احتياطية
+        async function restoreBackup(filename) {
+            if (!confirm('هل تريد استعادة هذه النسخة؟ سيتم استبدال البيانات الحالية!')) return;
+
+            try {
+                const result = await apiManager.restoreBackup(filename);
+
+                if (result.success) {
+                    localStorage.setItem('myTrades', JSON.stringify(result.data.trades || []));
+                    localStorage.setItem('myDividends', JSON.stringify(result.data.dividends || []));
+                    localStorage.setItem('investmentRoadmap', JSON.stringify(result.data.roadmap || []));
+
+                    alert('✅ تمت الاستعادة بنجاح!');
+                    location.reload();
+                }
+            } catch (error) {
+                alert('❌ فشلت الاستعادة');
+            }
+        }
+
+        // حذف نسخة احتياطية
+        async function deleteBackup(filename) {
+            if (!confirm('هل تريد حذف هذه النسخة؟')) return;
+
+            try {
+                const result = await apiManager.deleteBackup(filename);
+                if (result.success) {
+                    alert('✅ تم الحذف');
+                    loadBackupsList();
+                }
+            } catch (error) {
+                alert('❌ فشل الحذف');
+            }
+        }
+
+        // حذف كل البيانات
+        function deleteAllData() {
+            const confirmation = prompt('اكتب "حذف نهائي" للتأكيد:');
+            if (confirmation === 'حذف نهائي') {
+                localStorage.removeItem('myTrades');
+                localStorage.removeItem('myDividends');
+                localStorage.removeItem('investmentRoadmap');
+                alert('✅ تم حذف كل البيانات!');
+                location.reload();
+            }
+        }
+
+        // تحميل الصفحة
+        loadStats();
+        loadBackupsList();
+    </script>
+</body>
+</html>
