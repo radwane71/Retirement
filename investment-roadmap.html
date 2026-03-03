@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خارطة الطريق الاستثمارية - Retirement Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 900: '#001529', 800: '#001f3f', 700: '#002b55', 600: '#003366' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background-color: #001f3f; color: #f3f4f6; }
+        .input-style { @apply bg-navy-800 border border-navy-600 rounded-xl p-3 text-sm focus:border-blue-500 outline-none w-full text-white; }
+        .editable-cell:focus { @apply bg-blue-900/30 outline-none ring-1 ring-blue-500 rounded; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <nav class="bg-navy-900 border-b border-navy-600 p-4 mb-8 flex flex-col md:flex-row justify-between items-center rounded-2xl shadow-2xl">
+        <div class="flex items-center gap-3 mb-4 md:mb-0">
+            <div class="bg-blue-600 p-2 rounded-lg text-xl">💼</div>
+            <h1 class="text-2xl font-bold text-white uppercase tracking-wider">Retirement <span class="text-blue-400 font-light">Hub</span></h1>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4 text-sm font-medium">
+            <a href="index.html" class="px-4 py-2 hover:text-blue-400 transition">الرئيسية 🏠</a>
+            <a href="trade-log.html" class="px-4 py-2 hover:text-blue-400 transition">سجل التداول 📝</a>
+            <a href="dividends.html" class="px-4 py-2 hover:text-blue-400 transition">التوزيعات 💵</a>
+            <a href="investment-roadmap.html" class="px-4 py-2 text-blue-400 border-b-2 border-blue-400">خارطة الطريق 🗺️</a>
+        </div>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-blue-300 text-xs font-bold uppercase">إجمالي الضخ المخطط 🗓️</span>
+            <div class="text-3xl font-black text-white mt-1"><span id="total-planned">0.00</span></div>
+        </div>
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl border-green-500/30">
+            <span class="text-green-400 text-xs font-bold uppercase">إجمالي الضخ المنفذ ✅</span>
+            <div class="text-3xl font-black text-green-400 mt-1"><span id="total-completed">0.00</span></div>
+        </div>
+        <div class="col-span-1 md:col-span-2 bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl flex flex-col justify-center">
+            <div class="flex justify-between mb-2">
+                <span class="text-xs text-gray-400 font-bold uppercase">نسبة تحقيق خطة الضخ</span>
+                <span id="progress-percent" class="text-xs font-bold text-blue-400">0%</span>
+            </div>
+            <div class="w-full bg-navy-900 rounded-full h-4 border border-navy-600 overflow-hidden">
+                <div id="progress-bar" class="bg-blue-600 h-full transition-all duration-1000 shadow-[0_0_15px_rgba(37,99,235,0.5)]" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-navy-900 border border-navy-600 rounded-3xl shadow-2xl overflow-hidden mb-8">
+        <div class="bg-navy-700 p-4 border-b border-navy-600 flex justify-between items-center">
+            <h2 class="font-bold text-lg flex items-center gap-2">✨ إضافة مخطط ضخ مالي جديد</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div><label class="text-xs text-blue-300 block mb-1">السنة</label><input type="number" id="yearInput" value="2026" class="input-style"></div>
+            <div><label class="text-xs text-blue-300 block mb-1">الشهر</label><input type="number" id="monthInput" min="1" max="12" value="1" class="input-style"></div>
+            <div><label class="text-xs text-blue-300 block mb-1">المبلغ للضخ</label><input type="number" id="amountInput" placeholder="0.00" class="input-style"></div>
+            <div class="pt-5"><button onclick="addPlannedInjection()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95">إضافة للخريطة ➕</button></div>
+        </div>
+    </div>
+
+    <div class="bg-navy-900 border border-navy-600 rounded-3xl shadow-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-right text-sm">
+                <thead>
+                    <tr class="bg-navy-700 text-blue-300 border-b border-navy-600">
+                        <th class="p-4">السنة</th>
+                        <th class="p-4">الشهر</th>
+                        <th class="p-4">المبلغ المخطط (ر.س)</th>
+                        <th class="p-4 text-center">الحالة</th>
+                        <th class="p-4 text-center">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="roadmapTableBody" class="divide-y divide-navy-600">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // تحميل البيانات الأولية أو من LocalStorage
+        let roadmapData = JSON.parse(localStorage.getItem('investmentRoadmap')) || [
+            { year: 2026, month: 11, amount: 10620.99, status: 'planned' },
+            { year: 2026, month: 12, amount: 10620.99, status: 'planned' },
+            { year: 2027, month: 1, amount: 11389.83, status: 'planned' }
+        ];
+
+        const renderRoadmap = () => {
+            const tableBody = document.getElementById('roadmapTableBody');
+            tableBody.innerHTML = '';
+            
+            let totalPlanned = 0;
+            let totalCompleted = 0;
+
+            roadmapData.sort((a,b) => (a.year * 12 + a.month) - (b.year * 12 + b.month)).forEach((item, index) => {
+                const isCompleted = item.status === 'completed';
+                totalPlanned += parseFloat(item.amount);
+                if(isCompleted) totalCompleted += parseFloat(item.amount);
+
+                tableBody.innerHTML += `
+                    <tr class="hover:bg-navy-800 transition group ${isCompleted ? 'bg-green-500/5' : ''}">
+                        <td class="p-4 font-bold text-gray-300">${item.year}</td>
+                        <td class="p-4 font-bold text-blue-400">${item.month}</td>
+                        <td class="p-4 font-mono text-white text-lg font-black">
+                            <span contenteditable="true" onblur="editAmount(${index}, this)" class="editable-cell px-2 py-1">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="toggleStatus(${index})" class="px-4 py-2 rounded-full text-xs font-black border transition-all ${isCompleted ? 'bg-green-500 text-white border-green-400' : 'bg-navy-800 text-amber-500 border-amber-500/50'}">
+                                ${isCompleted ? 'تم الضخ ✅' : 'مخطط له 🗓️'}
+                            </button>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteRow(${index})" class="text-red-500 hover:scale-110 transition opacity-0 group-hover:opacity-100">🗑️ حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // تحديث الإحصائيات
+            document.getElementById('total-planned').innerText = totalPlanned.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('total-completed').innerText = totalCompleted.toLocaleString(undefined, {minimumFractionDigits: 2});
+            
+            const percent = totalPlanned > 0 ? (totalCompleted / totalPlanned * 100).toFixed(1) : 0;
+            document.getElementById('progress-percent').innerText = percent + '%';
+            document.getElementById('progress-bar').style.width = percent + '%';
+
+            localStorage.setItem('investmentRoadmap', JSON.stringify(roadmapData));
+        };
+
+        const addPlannedInjection = () => {
+            const year = parseInt(document.getElementById('yearInput').value);
+            const month = parseInt(document.getElementById('monthInput').value);
+            const amount = parseFloat(document.getElementById('amountInput').value);
+
+            if (!year || !month || !amount) return alert("فضلاً تأكد من إدخال جميع بيانات الضخ!");
+
+            roadmapData.push({ year, month, amount, status: 'planned' });
+            renderRoadmap();
+            document.getElementById('amountInput').value = '';
+        };
+
+        const toggleStatus = (index) => {
+            roadmapData[index].status = roadmapData[index].status === 'planned' ? 'completed' : 'planned';
+            renderRoadmap();
+        };
+
+        const deleteRow = (index) => {
+            if(confirm('هل تريد إزالة هذا الشهر من خطة الضخ؟')) {
+                roadmapData.splice(index, 1);
+                renderRoadmap();
+            }
+        };
+
+        const editAmount = (index, element) => {
+            const newAmount = parseFloat(element.innerText.replace(/,/g, ''));
+            if (!isNaN(newAmount)) {
+                roadmapData[index].amount = newAmount;
+                renderRoadmap();
+            } else {
+                renderRoadmap(); // ريفريش لإعادة القيمة القديمة إذا كان المدخل خطأ
+            }
+        };
+
+        // التشغيل الأولي
+        renderRoadmap();
+    </script>
+</body>
+</html>
