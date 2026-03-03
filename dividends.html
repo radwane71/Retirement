@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل التوزيعات النقدية - Retirement Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#001529',
+                            800: '#001f3f',
+                            700: '#002b55',
+                            600: '#003366',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #001529; }
+        ::-webkit-scrollbar-thumb { background: #003366; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+    </style>
+</head>
+<body class="bg-navy-800 text-gray-100 min-h-screen p-4 md:p-8">
+
+    <nav class="bg-navy-900 border-b border-navy-600 p-4 mb-8 flex flex-col md:flex-row justify-between items-center rounded-2xl shadow-2xl">
+        <div class="flex items-center gap-3 mb-4 md:mb-0">
+            <div class="bg-blue-600 p-2 rounded-lg text-xl">💼</div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">RETIREMENT <span class="text-blue-400">PROJECT</span></h1>
+        </div>
+        <div class="flex gap-6 text-sm font-medium">
+            <a href="index.html" class="hover:text-blue-400 transition">لوحة التحكم 📊</a>
+            <a href="trade-log.html" class="hover:text-blue-400 transition">سجل التداول 📝</a>
+            <a href="#" class="hover:text-blue-400 transition">المحفظة 🏦</a>
+            <a href="#" class="text-blue-400 border-b-2 border-blue-400 pb-1">التوزيعات 💵</a>
+            <a href="#" class="hover:text-blue-400 transition">المركز المالي 📈</a>
+        </div>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-navy-700 p-6 rounded-2xl shadow-lg border border-navy-600 flex flex-col justify-center">
+            <p class="text-green-400 text-sm mb-2">إجمالي التوزيعات التراكمية 💰</p>
+            <h3 class="text-3xl font-bold text-white" id="total-all-time">0 <span class="text-sm font-light text-gray-400">ر.س</span></h3>
+        </div>
+
+        <div class="bg-navy-700 p-6 rounded-2xl shadow-lg border border-navy-600 flex flex-col justify-center">
+            <p class="text-blue-300 text-sm mb-2">توزيعات عام 2025 📅</p>
+            <h3 class="text-2xl font-bold text-white" id="total-2025">0 <span class="text-sm font-light text-gray-400">ر.س</span></h3>
+        </div>
+
+        <div class="bg-navy-700 p-6 rounded-2xl shadow-lg border border-navy-600 flex flex-col justify-center">
+            <p class="text-blue-300 text-sm mb-2">توزيعات عام 2026 📅</p>
+            <h3 class="text-2xl font-bold text-white" id="total-2026">0 <span class="text-sm font-light text-gray-400">ر.س</span></h3>
+        </div>
+
+        <div class="bg-navy-700 p-4 rounded-2xl shadow-lg border border-navy-600 overflow-y-auto max-h-32">
+            <p class="text-amber-300 text-xs font-bold mb-2">🏆 أفضل الشركات الموزعة (Top Payers)</p>
+            <ul id="top-payers-list" class="space-y-2 text-sm">
+                </ul>
+        </div>
+    </div>
+
+    <div id="alerts-container" class="mb-8 hidden">
+        <div class="bg-red-500/10 border border-red-500/50 rounded-2xl p-4 shadow-lg">
+            <h3 class="text-red-400 font-bold mb-2 flex items-center gap-2">
+                ⚠️ إنذار انخفاض التوزيعات (Dividend Cut Alert)
+            </h3>
+            <ul id="alerts-list" class="text-sm text-red-200 space-y-1 list-disc list-inside">
+                </ul>
+        </div>
+    </div>
+
+    <div class="bg-navy-900 rounded-2xl border border-navy-600 shadow-2xl overflow-hidden">
+        <div class="p-6 border-b border-navy-600 flex justify-between items-center bg-navy-700">
+            <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    💵 سجل استلام التوزيعات النقدية
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">يتم جلب اسم الشركة والقطاع تلقائياً بناءً على كود السهم.</p>
+            </div>
+            <button class="bg-blue-600 hover:bg-blue-500 px-5 py-2.5 rounded-xl text-sm transition font-bold flex items-center gap-2 shadow-lg">
+                ➕ إدخال توزيع جديد
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-center text-sm">
+                <thead>
+                    <tr class="bg-navy-800 text-blue-300 uppercase tracking-wider border-b border-navy-600">
+                        <th class="p-3 text-right">السنة</th>
+                        <th class="p-3 text-right">الكود</th>
+                        <th class="p-3 text-right">الشركة (تلقائي)</th>
+                        <th class="p-3 text-right">القطاع (تلقائي)</th>
+                        <th class="p-3">يناير</th>
+                        <th class="p-3">فبراير</th>
+                        <th class="p-3">مارس</th>
+                        <th class="p-3">أبريل</th>
+                        <th class="p-3">مايو</th>
+                        <th class="p-3">يونيو</th>
+                        <th class="p-3">يوليو</th>
+                        <th class="p-3">أغسطس</th>
+                        <th class="p-3">سبتمبر</th>
+                        <th class="p-3">أكتوبر</th>
+                        <th class="p-3">نوفمبر</th>
+                        <th class="p-3">ديسمبر</th>
+                        <th class="p-3 font-bold text-green-400">الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody id="dividends-table-body" class="divide-y divide-navy-600">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. القاموس المرجعي للشركات (يحاكي ملف Ticker.xlsx)
+        // ==========================================
+        const tickersMap = {
+            "2222": { name: "أرامكو السعودية", sector: "الطاقة", type: "محلي" },
+            "1010": { name: "بنك الرياض", sector: "البنوك", type: "محلي" },
+            "5110": { name: "الكهرباء السعودية", sector: "المرافق العامة", type: "محلي" },
+            "2020": { name: "سابك للمغذيات", sector: "المواد الاساسية", type: "محلي" },
+            "4164": { name: "النهدي", sector: "الرعاية الصحية", type: "محلي" },
+            "4190": { name: "جرير", sector: "تجزئة السلع الكمالية", type: "محلي" },
+            "4342": { name: "صندوق جدوى ريت", sector: "صناديق ريت", type: "محلي" }
+        };
+
+        // ==========================================
+        // 2. بيانات التوزيعات المدخلة (تحاكي ملف CSV)
+        // يتم إدخال الكود (ticker) فقط والمبالغ
+        // ==========================================
+        const dividendRecords = [
+            { year: 2025, ticker: "2222", payouts: [0, 0, 33.12, 0, 0, 359.69, 0, 0, 392.81, 0, 0, 0] },
+            { year: 2025, ticker: "4190", payouts: [0, 25.6, 0, 0, 155.4, 0, 0, 181.0, 0, 0, 0, 0] },
+            { year: 2025, ticker: "4342", payouts: [0, 58.0, 0, 0, 232.0, 0, 0, 190.0, 0, 0, 0, 0] },
+            // محاكاة لشركة خفضت توزيعاتها 3 مرات متتالية (4 إدخالات متناقصة) لاختبار نظام الإنذار
+            { year: 2025, ticker: "2020", payouts: [0, 1.00, 0, 0.80, 0, 0.60, 0, 0.50, 0, 0, 0, 0] }
+        ];
+
+        // ==========================================
+        // 3. المنطق المالي والحسابات
+        // ==========================================
+        let totalAll = 0;
+        let total25 = 0;
+        let total26 = 0;
+        const companyTotals = {};
+        const companyPayoutHistory = {};
+
+        const tableBody = document.getElementById('dividends-table-body');
+
+        dividendRecords.forEach(record => {
+            // جلب معلومات الشركة من القاموس
+            const companyInfo = tickersMap[record.ticker] || { name: "غير معروف", sector: "غير محدد" };
+            
+            // حساب إجمالي الصف
+            const rowTotal = record.payouts.reduce((a, b) => a + b, 0);
+            
+            // إضافة للإجماليات
+            totalAll += rowTotal;
+            if (record.year === 2025) total25 += rowTotal;
+            if (record.year === 2026) total26 += rowTotal;
+
+            // حساب الإجمالي لكل شركة للترتيب
+            if (!companyTotals[record.ticker]) companyTotals[record.ticker] = 0;
+            companyTotals[record.ticker] += rowTotal;
+
+            // تجميع تاريخ الدفعات لاختبار الإنذار (نتجاهل الأصفار)
+            if (!companyPayoutHistory[record.ticker]) companyPayoutHistory[record.ticker] = [];
+            record.payouts.forEach(val => {
+                if (val > 0) companyPayoutHistory[record.ticker].push(val);
+            });
+
+            // بناء صف الجدول
+            let rowHtml = `
+                <tr class="hover:bg-navy-700 transition">
+                    <td class="p-3 text-right font-bold text-gray-300">${record.year}</td>
+                    <td class="p-3 text-right font-mono text-blue-400">${record.ticker}</td>
+                    <td class="p-3 text-right font-bold text-white">${companyInfo.name}</td>
+                    <td class="p-3 text-right text-xs text-gray-400">${companyInfo.sector}</td>
+            `;
+            
+            record.payouts.forEach(val => {
+                rowHtml += `<td class="p-3 ${val > 0 ? 'text-green-400 font-bold' : 'text-gray-600'}">${val > 0 ? val.toFixed(2) : '-'}</td>`;
+            });
+
+            rowHtml += `<td class="p-3 font-bold text-green-400 bg-navy-800/50">${rowTotal.toFixed(2)}</td></tr>`;
+            tableBody.insertAdjacentHTML('beforeend', rowHtml);
+        });
+
+        // تحديث أرقام لوحة التحكم العلوية
+        document.getElementById('total-all-time').innerHTML = `${totalAll.toFixed(2)} <span class="text-sm font-light text-gray-400">ر.س</span>`;
+        document.getElementById('total-2025').innerHTML = `${total25.toFixed(2)} <span class="text-sm font-light text-gray-400">ر.س</span>`;
+        document.getElementById('total-2026').innerHTML = `${total26.toFixed(2)} <span class="text-sm font-light text-gray-400">ر.س</span>`;
+
+        // ==========================================
+        // 4. ترتيب أفضل الشركات (Top Payers Ranking)
+        // ==========================================
+        const sortedCompanies = Object.keys(companyTotals).sort((a, b) => companyTotals[b] - companyTotals[a]);
+        const topPayersList = document.getElementById('top-payers-list');
+        sortedCompanies.slice(0, 3).forEach((ticker, index) => { // عرض أفضل 3
+            const compName = tickersMap[ticker]?.name || ticker;
+            const amount = companyTotals[ticker].toFixed(2);
+            topPayersList.insertAdjacentHTML('beforeend', `
+                <li class="flex justify-between items-center border-b border-navy-600 pb-1">
+                    <span class="text-gray-300">${index + 1}. ${compName}</span>
+                    <span class="font-bold text-green-400">${amount}</span>
+                </li>
+            `);
+        });
+
+        // ==========================================
+        // 5. نظام إنذار التخفيض المتتالي (Dividend Cut Alert)
+        // ==========================================
+        const alertsList = document.getElementById('alerts-list');
+        let hasAlerts = false;
+
+        Object.keys(companyPayoutHistory).forEach(ticker => {
+            const history = companyPayoutHistory[ticker];
+            // نحتاج على الأقل 4 دفعات متتالية لنقرر أن هناك 3 انخفاضات
+            if (history.length >= 4) {
+                // نأخذ آخر 4 دفعات زمنياً
+                const last4 = history.slice(-4);
+                // التحقق: الدفعة 1 > الدفعة 2 > الدفعة 3 > الدفعة 4
+                if (last4[0] > last4[1] && last4[1] > last4[2] && last4[2] > last4[3]) {
+                    hasAlerts = true;
+                    const compName = tickersMap[ticker]?.name || ticker;
+                    alertsList.insertAdjacentHTML('beforeend', `
+                        <li>السهم <strong>(${compName} - ${ticker})</strong> خفّض توزيعاته 3 مرات متتالية! التسلسل الأخير: <span class="font-mono text-red-300">[${last4.join(' ← ')}]</span>. ينصح بمراجعة القوائم المالية.</li>
+                    `);
+                }
+            }
+        });
+
+        if (hasAlerts) {
+            document.getElementById('alerts-container').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
