@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الرئيسية - Retirement Hub</title>
     
-    <script src="assets/js/auth.js"></script>
     <script>
-        authManager.protectPage();
+        // حماية الصفحة
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -66,7 +68,7 @@
                     <span class="text-xs text-gray-400 font-bold uppercase tracking-widest">أهلاً بك</span>
                     <span id="user-name" class="text-sm text-blue-400 font-black italic">👋</span>
                 </div>
-                <button onclick="authManager.logout()" class="bg-red-500/10 text-red-500 hover:bg-red-600 hover:text-white border border-red-500/20 px-8 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300">
+                <button onclick="sessionStorage.clear(); window.location.href='login.html';" class="bg-red-500/10 text-red-500 hover:bg-red-600 hover:text-white border border-red-500/20 px-8 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300">
                     خروج
                 </button>
             </div>
@@ -127,10 +129,8 @@
 
     <script>
         // عرض اسم المستخدم
-        const user = authManager.getUser();
-        if (user) {
-            document.getElementById('user-name').textContent = `${user.username} 👋`;
-        }
+        const username = sessionStorage.getItem('username') || 'رضوان الجهني';
+        document.getElementById('user-name').textContent = `${username} 👋`;
     </script>
 </body>
 </html>
