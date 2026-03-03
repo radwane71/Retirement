@@ -22,7 +22,7 @@
             <p class="text-gray-400 text-sm mt-3 font-bold">بوابة الإدارة المالية الآمنة</p>
         </div>
 
-        <form onsubmit="handleLogin(event)" class="space-y-6">
+        <form id="loginForm" class="space-y-6">
             <div>
                 <label class="block text-blue-300 text-xs font-black mb-2 pr-1 uppercase">اسم المستخدم</label>
                 <input id="username" type="text" placeholder="اسم المستخدم" class="w-full bg-navy-800 text-white border border-navy-600 rounded-2xl py-4 px-5 focus:border-blue-500 outline-none shadow-inner font-bold" required>
@@ -31,25 +31,59 @@
                 <label class="block text-blue-300 text-xs font-black mb-2 pr-1 uppercase">كلمة المرور</label>
                 <input id="password" type="password" placeholder="••••••••" class="w-full bg-navy-800 text-white border border-navy-600 rounded-2xl py-4 px-5 focus:border-blue-500 outline-none shadow-inner font-bold" required>
             </div>
-            <div id="error-msg" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-xs text-center font-black italic">⚠️ البيانات غير صحيحة!</div>
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 text-lg">دخول النظام الآمن 🔐</button>
+            <div id="error-msg" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-xs text-center font-black italic"></div>
+            <div id="loading-msg" class="hidden bg-blue-500/10 border border-blue-500/30 text-blue-400 px-4 py-3 rounded-xl text-xs text-center font-black">
+                جاري التحقق... ⏳
+            </div>
+            <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 text-lg">
+                دخول النظام الآمن 🔐
+            </button>
         </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-gray-500 text-xs">
+                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
+                Backend Active
+            </p>
+        </div>
     </div>
 
+    <script src="assets/js/auth.js"></script>
     <script>
-        function handleLogin(event) {
-            event.preventDefault();
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            
-            if (user === 'radwan aljohani' && pass === '1117473137') {
-                // حفظ حالة الدخول في ذاكرة المتصفح المؤقتة
-                sessionStorage.setItem('isLoggedIn', 'true');
-                window.location.href = 'index.html'; // الانتقال للرئيسية
-            } else {
-                document.getElementById('error-msg').classList.remove('hidden');
-            }
+        // منع الوصول للصفحة إذا كان مسجل دخول مسبقاً
+        if (authManager.isAuthenticated()) {
+            window.location.href = 'index.html';
         }
+
+        const loginForm = document.getElementById('loginForm');
+        const errorMsg = document.getElementById('error-msg');
+        const loadingMsg = document.getElementById('loading-msg');
+        const loginBtn = document.getElementById('loginBtn');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            // إخفاء الرسائل
+            errorMsg.classList.add('hidden');
+            loadingMsg.classList.remove('hidden');
+            loginBtn.disabled = true;
+
+            // محاولة تسجيل الدخول
+            const result = await authManager.login(username, password);
+
+            loadingMsg.classList.add('hidden');
+            loginBtn.disabled = false;
+
+            if (result.success) {
+                window.location.href = 'index.html';
+            } else {
+                errorMsg.textContent = `⚠️ ${result.error}`;
+                errorMsg.classList.remove('hidden');
+            }
+        });
     </script>
 </body>
 </html>
