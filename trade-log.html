@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سجل العمليات الاحترافي - Retirement Project</title>
+    
+    <script src="assets/js/auth.js"></script>
+    <script>
+        authManager.protectPage();
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script src="assets/data/tickers.js"></script>
+    <script src="assets/js/validation.js"></script>
     
     <script>
         tailwind.config = {
@@ -24,13 +31,15 @@
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
         body { font-family: 'Tajawal', sans-serif; background-color: #001f3f; color: #f3f4f6; }
         
-        /* تحسين استايل الحقول ليكون النص واضحاً جداً (Premium Style) */
         .input-premium { 
             @apply bg-navy-800 border border-navy-600 rounded-2xl p-4 text-base text-white w-full transition-all duration-300 font-bold;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
         }
         .input-premium:focus { 
             @apply border-blue-500 bg-navy-700 ring-4 ring-blue-500/10 outline-none;
+        }
+        .input-premium.error {
+            @apply border-red-500 ring-2 ring-red-500/20;
         }
         .field-label { @apply text-xs font-black text-blue-400 mb-2 flex items-center gap-2 pr-1 uppercase tracking-widest; }
         
@@ -50,6 +59,7 @@
             <a href="trade-log.html" class="px-4 py-2 text-blue-400 border-b-2 border-blue-400 pb-1">سجل التداول 📝</a>
             <a href="dividends.html" class="px-4 py-2 hover:text-blue-400 transition">التوزيعات 💵</a>
             <a href="investment-roadmap.html" class="px-4 py-2 hover:text-blue-400 transition">خارطة الطريق 🗺️</a>
+            <a href="settings.html" class="px-4 py-2 hover:text-blue-400 transition">الإعدادات ⚙️</a>
         </div>
     </nav>
 
@@ -62,9 +72,13 @@
             <span class="text-amber-400 text-xs font-bold uppercase tracking-widest">إجمالي الضريبة (VAT) 🏛️</span>
             <div class="text-3xl font-black text-amber-500 mt-1"><span id="stat-vat">0.00</span> <span class="text-xs text-gray-400 font-light">ر.س</span></div>
         </div>
-        <div class="col-span-1 md:col-span-2 bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
-            <span class="text-green-400 text-xs font-bold uppercase block text-center mb-2 tracking-widest">حجم التداولات المنفذة 📊</span>
-            <div class="h-16 w-full"><canvas id="miniChart"></canvas></div>
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-green-400 text-xs font-bold uppercase tracking-widest">عدد العمليات 📊</span>
+            <div class="text-3xl font-black text-green-400 mt-1"><span id="stat-count">0</span></div>
+        </div>
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-purple-400 text-xs font-bold uppercase tracking-widest">حجم التداولات 💰</span>
+            <div class="text-2xl font-black text-purple-400 mt-1"><span id="stat-volume">0</span> <span class="text-xs text-gray-400 font-light">ر.س</span></div>
         </div>
     </div>
 
@@ -83,33 +97,59 @@
         </div>
 
         <div class="p-8">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div>
-                    <label class="field-label">🆔 كود السهم (Ticker)</label>
-                    <input type="text" id="tickerInput" placeholder="مثلاً: 2222" class="input-premium">
+            <form id="tradeForm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div>
+                        <label class="field-label">🆔 كود السهم (Ticker)</label>
+                        <input type="text" id="tickerInput" placeholder="مثلاً: 2222" class="input-premium" maxlength="4" pattern="[0-9]{4}">
+                        <p class="text-red-400 text-xs mt-1 hidden" id="ticker-error">يجب إدخال 4 أرقام</p>
+                    </div>
+                    <div>
+                        <label class="field-label">🏷️ نوع العملية</label>
+                        <select id="typeInput" class="input-premium appearance-none cursor-pointer">
+                            <option value="Buy" class="bg-navy-900 text-green-400">شراء 🟢</option>
+                            <option value="Sell" class="bg-navy-900 text-red-400">بيع 🔴</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">🔢 الكمية (Quantity)</label>
+                        <input type="number" id="qtyInput" placeholder="0" class="input-premium" min="1" step="1">
+                        <p class="text-red-400 text-xs mt-1 hidden" id="qty-error">يجب أن تكون عدد صحيح موجب</p>
+                    </div>
+                    <div>
+                        <label class="field-label">💰 سعر الوحدة</label>
+                        <input type="number" id="priceInput" step="0.01" placeholder="0.00" class="input-premium" min="0.01">
+                        <p class="text-red-400 text-xs mt-1 hidden" id="price-error">يجب أن يكون أكبر من صفر</p>
+                    </div>
                 </div>
-                <div>
-                    <label class="field-label">🏷️ نوع العملية</label>
-                    <select id="typeInput" class="input-premium appearance-none cursor-pointer">
-                        <option value="Buy" class="bg-navy-900 text-green-400">شراء 🟢</option>
-                        <option value="Sell" class="bg-navy-900 text-red-400">بيع 🔴</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="field-label">🔢 الكمية (Quantity)</label>
-                    <input type="number" id="qtyInput" placeholder="0" class="input-premium">
-                </div>
-                <div>
-                    <label class="field-label">💰 سعر الوحدة</label>
-                    <input type="number" id="priceInput" step="0.01" placeholder="0.00" class="input-premium">
-                </div>
-            </div>
 
-            <div class="mt-10">
-                <button onclick="addTrade()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-[1.5rem] shadow-[0_10px_30px_-10px_rgba(37,99,235,0.5)] transition-all duration-300 transform active:scale-[0.97] flex items-center justify-center gap-3 text-lg">
-                    تنفيذ وإضافة العملية للسجل ➕
-                </button>
-            </div>
+                <div class="mt-8 p-5 bg-navy-800/30 rounded-2xl border border-navy-700">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">اسم الشركة</p>
+                            <p id="preview-name" class="text-white font-black text-sm">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">القطاع</p>
+                            <p id="preview-sector" class="text-blue-400 font-bold text-xs">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">إجمالي الصفقة</p>
+                            <p id="preview-total" class="text-green-400 font-black text-sm">0.00 ر.س</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">العمولة + الضريبة</p>
+                            <p id="preview-fees" class="text-amber-400 font-black text-sm">0.00 ر.س</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-[1.5rem] shadow-[0_10px_30px_-10px_rgba(37,99,235,0.5)] transition-all duration-300 transform active:scale-[0.97] flex items-center justify-center gap-3 text-lg">
+                        تنفيذ وإضافة العملية للسجل ➕
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -124,18 +164,19 @@
                         <th class="p-5">الحالة</th>
                         <th class="p-5">الكمية</th>
                         <th class="p-5">السعر</th>
+                        <th class="p-5">العمولة</th>
+                        <th class="p-5">الضريبة</th>
                         <th class="p-5">التكلفة الإجمالية</th>
                         <th class="p-5 text-center">إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="tradeTableBody" class="divide-y divide-navy-600 font-medium text-xs">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // المنطق البرمجي (بقي كما هو لضمان عمل الصفحة 100%)
         let trades = JSON.parse(localStorage.getItem('myTrades')) || [];
 
         const calculateFees = (qty, price) => {
@@ -145,11 +186,41 @@
             return { commission, vat };
         }
 
+        // Live Preview
+        const updatePreview = () => {
+            const ticker = document.getElementById('tickerInput').value.trim();
+            const qty = parseFloat(document.getElementById('qtyInput').value) || 0;
+            const price = parseFloat(document.getElementById('priceInput').value) || 0;
+
+            if (ticker && tickersMap[ticker]) {
+                document.getElementById('preview-name').textContent = tickersMap[ticker].name;
+                document.getElementById('preview-sector').textContent = tickersMap[ticker].sector;
+            } else {
+                document.getElementById('preview-name').textContent = '-';
+                document.getElementById('preview-sector').textContent = '-';
+            }
+
+            if (qty > 0 && price > 0) {
+                const total = qty * price;
+                const fees = calculateFees(qty, price);
+                document.getElementById('preview-total').textContent = total.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ر.س';
+                document.getElementById('preview-fees').textContent = (fees.commission + fees.vat).toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ر.س';
+            } else {
+                document.getElementById('preview-total').textContent = '0.00 ر.س';
+                document.getElementById('preview-fees').textContent = '0.00 ر.س';
+            }
+        }
+
+        document.getElementById('tickerInput').addEventListener('input', updatePreview);
+        document.getElementById('qtyInput').addEventListener('input', updatePreview);
+        document.getElementById('priceInput').addEventListener('input', updatePreview);
+
         const renderTrades = () => {
             const tableBody = document.getElementById('tradeTableBody');
             tableBody.innerHTML = '';
             let totalComm = 0;
             let totalVat = 0;
+            let totalVolume = 0;
 
             trades.forEach((trade, index) => {
                 const company = tickersMap[trade.ticker] || { name: "غير مسجل", sector: "غير محدد" };
@@ -158,6 +229,7 @@
                 
                 totalComm += fees.commission;
                 totalVat += fees.vat;
+                totalVolume += trade.qty * trade.price;
 
                 tableBody.innerHTML += `
                     <tr class="hover:bg-navy-800 transition-colors">
@@ -171,6 +243,8 @@
                         </td>
                         <td class="p-5 font-bold">${trade.qty.toLocaleString()}</td>
                         <td class="p-5 font-bold">${trade.price.toFixed(2)}</td>
+                        <td class="p-5 text-blue-300 font-bold">${fees.commission.toFixed(2)}</td>
+                        <td class="p-5 text-amber-400 font-bold">${fees.vat.toFixed(2)}</td>
                         <td class="p-5 font-black text-blue-300 text-sm">${totalCost.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
                         <td class="p-5 text-center">
                             <button onclick="deleteTrade(${index})" class="text-red-500 hover:scale-125 transition-transform">🗑️</button>
@@ -181,65 +255,83 @@
 
             document.getElementById('stat-commission').innerText = totalComm.toFixed(2);
             document.getElementById('stat-vat').innerText = totalVat.toFixed(2);
+            document.getElementById('stat-count').innerText = trades.length;
+            document.getElementById('stat-volume').innerText = totalVolume.toLocaleString(undefined, {minimumFractionDigits: 2});
+            
             localStorage.setItem('myTrades', JSON.stringify(trades));
-            updateChart();
         }
 
-        const addTrade = () => {
+        document.getElementById('tradeForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
             const ticker = document.getElementById('tickerInput').value.trim();
             const qty = parseFloat(document.getElementById('qtyInput').value);
             const price = parseFloat(document.getElementById('priceInput').value);
             const type = document.getElementById('typeInput').value;
 
-            if (!ticker || !qty || !price) {
-                alert("يا رضوان، فضلاً تأكد من تعبئة جميع الحقول!");
-                return;
+            // Reset errors
+            document.querySelectorAll('.input-premium').forEach(el => el.classList.remove('error'));
+            document.querySelectorAll('[id$="-error"]').forEach(el => el.classList.add('hidden'));
+
+            let hasError = false;
+
+            // Validation
+            if (!ValidationHelper.isValidTicker(ticker)) {
+                document.getElementById('tickerInput').classList.add('error');
+                document.getElementById('ticker-error').classList.remove('hidden');
+                hasError = true;
             }
+
+            if (!tickersMap[ticker]) {
+                ValidationHelper.showError('كود السهم غير موجود في القائمة!');
+                document.getElementById('tickerInput').classList.add('error');
+                hasError = true;
+            }
+
+            if (!ValidationHelper.isValidQuantity(qty)) {
+                document.getElementById('qtyInput').classList.add('error');
+                document.getElementById('qty-error').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (!ValidationHelper.isValidPrice(price)) {
+                document.getElementById('priceInput').classList.add('error');
+                document.getElementById('price-error').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (hasError) return;
 
             const newTrade = {
                 date: new Date().toLocaleString('ar-EG'), 
                 ticker,
-                qty,
-                price,
+                qty: parseInt(qty),
+                price: parseFloat(price),
                 type
             };
 
             trades.unshift(newTrade); 
             renderTrades();
             
-            document.getElementById('tickerInput').value = '';
-            document.getElementById('qtyInput').value = '';
-            document.getElementById('priceInput').value = '';
-        }
+            document.getElementById('tradeForm').reset();
+            updatePreview();
+            
+            // Success feedback
+            const btn = document.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ تم الإضافة بنجاح!';
+            btn.classList.add('bg-green-600');
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-green-600');
+            }, 2000);
+        });
 
         const deleteTrade = (index) => {
             if (confirm('هل أنت متأكد من حذف هذه العملية؟')) {
                 trades.splice(index, 1);
                 renderTrades();
             }
-        }
-
-        let myChart;
-        const updateChart = () => {
-            const ctx = document.getElementById('miniChart').getContext('2d');
-            if (myChart) myChart.destroy();
-            myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: trades.map(t => t.date).reverse(),
-                    datasets: [{
-                        label: 'حجم العمليات',
-                        data: trades.map(t => t.qty * t.price).reverse(),
-                        borderColor: '#10b981',
-                        borderWidth: 2,
-                        fill: true,
-                        backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                        tension: 0.4,
-                        pointRadius: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-            });
         }
 
         renderTrades();
