@@ -3,197 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سجل العمليات المنفذة - Retirement Project</title>
+    <title>سجل العمليات الاحترافي - Retirement Project</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="assets/data/tickers.js"></script>
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        navy: {
-                            900: '#001529', // خلفية النافبار
-                            800: '#001f3f', // الخلفية الرئيسية
-                            700: '#002b55', // خلفية الكروت
-                            600: '#003366', // حدود
-                        }
+                        navy: { 900: '#001529', 800: '#001f3f', 700: '#002b55', 600: '#003366' }
                     }
                 }
             }
         }
     </script>
     <style>
-        /* خطوط عربية جميلة */
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-        body { font-family: 'Tajawal', sans-serif; }
-        
-        /* تخصيص السكرول بار ليناسب الدارك ثيم */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #001529; }
-        ::-webkit-scrollbar-thumb { background: #003366; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #001f3f; color: #f3f4f6; }
+        .input-style { @apply bg-navy-800 border border-navy-600 rounded-xl p-3 text-sm focus:border-blue-500 outline-none w-full text-white; }
     </style>
 </head>
-<body class="bg-navy-800 text-gray-100 min-h-screen p-4 md:p-8">
+<body class="p-4 md:p-8 min-h-screen">
 
     <nav class="bg-navy-900 border-b border-navy-600 p-4 mb-8 flex flex-col md:flex-row justify-between items-center rounded-2xl shadow-2xl">
         <div class="flex items-center gap-3 mb-4 md:mb-0">
             <div class="bg-blue-600 p-2 rounded-lg text-xl">💼</div>
-            <h1 class="text-2xl font-bold tracking-tight text-white">RETIREMENT <span class="text-blue-400">PROJECT</span></h1>
+            <h1 class="text-2xl font-bold text-white uppercase tracking-wider">Retirement <span class="text-blue-400 font-light">Hub</span></h1>
         </div>
-        <div class="flex gap-6 text-sm font-medium">
-            <a href="#" class="hover:text-blue-400 transition">لوحة التحكم 📊</a>
-            <a href="#" class="text-blue-400 border-b-2 border-blue-400 pb-1">سجل التداول 📝</a>
-            <a href="#" class="hover:text-blue-400 transition">المحفظة 🏦</a>
-            <a href="#" class="hover:text-blue-400 transition">التوزيعات 💵</a>
-            <a href="#" class="hover:text-blue-400 transition">المركز المالي 📈</a>
+        <div class="flex flex-wrap justify-center gap-4 text-sm font-medium">
+            <a href="index.html" class="px-4 py-2 hover:text-blue-400 transition">الرئيسية 🏠</a>
+            <a href="trade-log.html" class="px-4 py-2 text-blue-400 border-b-2 border-blue-400">سجل التداول 📝</a>
+            <a href="dividends.html" class="px-4 py-2 hover:text-blue-400 transition">التوزيعات 💵</a>
         </div>
     </nav>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-navy-700 p-6 rounded-2xl shadow-lg border border-navy-600 flex items-center justify-between">
-            <div>
-                <p class="text-blue-300 text-sm mb-2">إجمالي العمولات 🧾</p>
-                <h3 class="text-3xl font-bold text-white">515.29 <span class="text-sm font-light text-gray-400">ر.س</span></h3>
-            </div>
-            <div class="text-4xl opacity-80">💸</div>
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-blue-300 text-xs font-bold uppercase">إجمالي العمولات 🧾</span>
+            <div class="text-3xl font-black text-white mt-1"><span id="stat-commission">0.00</span> <span class="text-xs text-gray-400">ر.س</span></div>
         </div>
-
-        <div class="bg-navy-700 p-6 rounded-2xl shadow-lg border border-navy-600 flex items-center justify-between">
-            <div>
-                <p class="text-amber-300 text-sm mb-2">إجمالي الضريبة (VAT) ⚠️</p>
-                <h3 class="text-3xl font-bold text-amber-500">62.50 <span class="text-sm font-light text-gray-400">ر.س</span></h3>
-            </div>
-            <div class="text-4xl opacity-80">🏛️</div>
+        <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-amber-400 text-xs font-bold uppercase">إجمالي الضريبة (VAT) 🏛️</span>
+            <div class="text-3xl font-black text-amber-500 mt-1"><span id="stat-vat">0.00</span> <span class="text-xs text-gray-400">ر.س</span></div>
         </div>
+        <div class="col-span-1 md:col-span-2 bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
+            <span class="text-green-400 text-xs font-bold uppercase block text-center mb-2">حجم التداولات المنفذة 📊</span>
+            <div class="h-16 w-full"><canvas id="miniChart"></canvas></div>
+        </div>
+    </div>
 
-        <div class="col-span-1 md:col-span-2 bg-navy-700 p-4 rounded-2xl shadow-lg border border-navy-600">
-            <p class="text-blue-300 text-sm mb-2 text-center">السيولة الداخلة في العمليات شهرياً 📊</p>
-            <div class="h-28 relative">
-                <canvas id="monthlyChart"></canvas>
+    <div class="bg-navy-900 border border-navy-600 rounded-3xl shadow-2xl overflow-hidden mb-8">
+        <div class="bg-navy-700 p-4 border-b border-navy-600 flex justify-between items-center">
+            <h2 class="font-bold text-lg flex items-center gap-2">✨ إضافة عملية تداول</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+                <label class="text-xs text-blue-300 block mb-1">كود السهم</label>
+                <input type="text" id="tickerInput" placeholder="مثلاً: 2222" class="input-style">
+            </div>
+            <div>
+                <label class="text-xs text-blue-300 block mb-1">النوع</label>
+                <select id="typeInput" class="input-style">
+                    <option value="Buy">شراء 🟢</option>
+                    <option value="Sell">بيع 🔴</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs text-blue-300 block mb-1">الكمية</label>
+                <input type="number" id="qtyInput" placeholder="0" class="input-style">
+            </div>
+            <div>
+                <label class="text-xs text-blue-300 block mb-1">السعر</label>
+                <input type="number" id="priceInput" step="0.01" placeholder="0.00" class="input-style">
+            </div>
+            <div class="pt-5">
+                <button onclick="addTrade()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95">إضافة العملية ➕</button>
             </div>
         </div>
     </div>
 
-    <div class="bg-navy-900 rounded-2xl border border-navy-600 shadow-2xl overflow-hidden">
-        <div class="p-6 border-b border-navy-600 flex justify-between items-center bg-navy-700">
-            <h2 class="text-xl font-bold flex items-center gap-2 text-white">
-                📋 سجل العمليات المنفذة (Trade Log)
-            </h2>
-            <button class="bg-blue-600 hover:bg-blue-500 px-5 py-2.5 rounded-xl text-sm transition font-bold flex items-center gap-2 shadow-lg">
-                ➕ إضافة عملية جديدة
-            </button>
-        </div>
-
+    <div class="bg-navy-900 border border-navy-600 rounded-3xl shadow-2xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-right text-sm">
                 <thead>
-                    <tr class="bg-navy-800 text-blue-300 uppercase tracking-wider border-b border-navy-600">
-                        <th class="p-4 font-semibold">م.</th>
-                        <th class="p-4 font-semibold">الحالة (Status)</th>
-                        <th class="p-4 font-semibold">السهم (Ticker)</th>
-                        <th class="p-4 font-semibold">الكمية</th>
-                        <th class="p-4 font-semibold">السعر</th>
-                        <th class="p-4 font-semibold">الإجمالي</th>
-                        <th class="p-4 font-semibold">العمولة (Commissions)</th>
-                        <th class="p-4 font-semibold">الضريبة (VAT 5%)</th>
-                        <th class="p-4 font-semibold">التكلفة الإجمالية (Total Cost)</th>
+                    <tr class="bg-navy-700 text-blue-300 border-b border-navy-600">
+                        <th class="p-4">التاريخ</th>
+                        <th class="p-4">الكود</th>
+                        <th class="p-4">الشركة</th>
+                        <th class="p-4">الحالة</th>
+                        <th class="p-4">الكمية</th>
+                        <th class="p-4">السعر</th>
+                        <th class="p-4">التكلفة</th>
+                        <th class="p-4 text-center">إجراءات</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-navy-600">
-                    <tr class="hover:bg-navy-700 transition">
-                        <td class="p-4 text-gray-400">1</td>
-                        <td class="p-4"><span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold border border-green-500/30">شراء (Buy) 🟢</span></td>
-                        <td class="p-4 font-bold text-white">النهدي</td>
-                        <td class="p-4">73</td>
-                        <td class="p-4">94.45</td>
-                        <td class="p-4">6,894.85</td>
-                        <td class="p-4 text-amber-200">10.68</td>
-                        <td class="p-4 text-amber-400">1.29</td>
-                        <td class="p-4 font-bold text-blue-300">6,882.86</td>
-                    </tr>
-                    <tr class="hover:bg-navy-700 transition">
-                        <td class="p-4 text-gray-400">2</td>
-                        <td class="p-4"><span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold border border-green-500/30">شراء (Buy) 🟢</span></td>
-                        <td class="p-4 font-bold text-white">النهدي</td>
-                        <td class="p-4">21</td>
-                        <td class="p-4">94.45</td>
-                        <td class="p-4">1,983.45</td>
-                        <td class="p-4 text-amber-200">3.07</td>
-                        <td class="p-4 text-amber-400">0.37</td>
-                        <td class="p-4 font-bold text-blue-300">1,980.00</td>
-                    </tr>
-                    <tr class="hover:bg-navy-700 transition">
-                        <td class="p-4 text-gray-400">3</td>
-                        <td class="p-4"><span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold border border-green-500/30">شراء (Buy) 🟢</span></td>
-                        <td class="p-4 font-bold text-white">أسواق ع العثيم</td>
-                        <td class="p-4">47</td>
-                        <td class="p-4">6.11</td>
-                        <td class="p-4">287.17</td>
-                        <td class="p-4 text-amber-200">0.44</td>
-                        <td class="p-4 text-amber-400">0.05</td>
-                        <td class="p-4 font-bold text-blue-300">286.67</td>
-                    </tr>
-                    <tr class="hover:bg-navy-700 transition">
-                        <td class="p-4 text-gray-400">4</td>
-                        <td class="p-4"><span class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-bold border border-red-500/30">بيع (Sell) 🔴</span></td>
-                        <td class="p-4 font-bold text-white">أسواق ع العثيم</td>
-                        <td class="p-4">9</td>
-                        <td class="p-4">6.11</td>
-                        <td class="p-4">54.99</td>
-                        <td class="p-4 text-amber-200">0.08</td>
-                        <td class="p-4 text-amber-400">0.01</td>
-                        <td class="p-4 font-bold text-blue-300">54.89</td>
-                    </tr>
-                </tbody>
+                <tbody id="tradeTableBody" class="divide-y divide-navy-600">
+                    </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // إعدادات خط Chart.js لتناسب الثيم الداكن
-        Chart.defaults.color = '#9ca3af';
-        Chart.defaults.font.family = 'Tajawal';
+        // تحميل البيانات من LocalStorage أو البدء بمصفوفة فارغة
+        let trades = JSON.parse(localStorage.getItem('myTrades')) || [];
 
-        const ctx = document.getElementById('monthlyChart').getContext('2d');
-        const monthlyChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
-                datasets: [{
-                    label: 'إجمالي التكلفة (ر.س)',
-                    data: [15000, 22000, 18000, 30000, 12000], // بيانات تقريبية
-                    backgroundColor: '#10b981', // لون أخضر للمكاسب والتدفق
-                    borderRadius: 4,
-                    barThickness: 15,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#001529',
-                        titleColor: '#60a5fa',
-                        bodyColor: '#fff',
-                        borderColor: '#003366',
-                        borderWidth: 1
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { display: false } // إخفاء الأرقام لتوفير المساحة
-                    },
-                    x: {
-                        grid: { display: false }
-                    }
-                }
+        // دالة الحسابات والضرائب (المعايير السعودية)
+        const calculateFees = (qty, price) => {
+            const total = qty * price;
+            const commission = Math.max(total * 0.00155, 12); // مثال: عمولة تداول + البنك (بحد أدنى 12 ريال)
+            const vat = commission * 0.15; // ضريبة القيمة المضافة 15% على العمولة
+            return { commission, vat };
+        }
+
+        const renderTrades = () => {
+            const tableBody = document.getElementById('tradeTableBody');
+            tableBody.innerHTML = '';
+            let totalComm = 0;
+            let totalVat = 0;
+
+            trades.forEach((trade, index) => {
+                const company = tickersMap[trade.ticker] || { name: "غير مسجل", sector: "غير محدد" };
+                const fees = calculateFees(trade.qty, trade.price);
+                const totalCost = (trade.qty * trade.price) + (trade.type === 'Buy' ? (fees.commission + fees.vat) : -(fees.commission + fees.vat));
+                
+                totalComm += fees.commission;
+                totalVat += fees.vat;
+
+                tableBody.innerHTML += `
+                    <tr class="hover:bg-navy-800 transition">
+                        <td class="p-4 text-gray-400 text-[10px] font-mono">${trade.date}</td>
+                        <td class="p-4 font-bold text-blue-400">${trade.ticker}</td>
+                        <td class="p-4 text-white">${company.name} <br> <span class="text-[9px] text-gray-500">${company.sector}</span></td>
+                        <td class="p-4">
+                            <span class="${trade.type === 'Buy' ? 'text-green-400' : 'text-red-400'} font-bold text-xs uppercase">
+                                ${trade.type === 'Buy' ? 'شراء 🟢' : 'بيع 🔴'}
+                            </span>
+                        </td>
+                        <td class="p-4 font-mono">${trade.qty}</td>
+                        <td class="p-4 font-mono">${trade.price}</td>
+                        <td class="p-4 font-bold text-blue-300">${totalCost.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteTrade(${index})" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white p-2 rounded-lg transition">🗑️ حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('stat-commission').innerText = totalComm.toFixed(2);
+            document.getElementById('stat-vat').innerText = totalVat.toFixed(2);
+            localStorage.setItem('myTrades', JSON.stringify(trades));
+            updateChart();
+        }
+
+        const addTrade = () => {
+            const ticker = document.getElementById('tickerInput').value.trim();
+            const qty = parseFloat(document.getElementById('qtyInput').value);
+            const price = parseFloat(document.getElementById('priceInput').value);
+            const type = document.getElementById('typeInput').value;
+
+            if (!ticker || !qty || !price) {
+                alert("يا رضوان، فضلاً تأكد من تعبئة جميع الحقول!");
+                return;
             }
-        });
+
+            const newTrade = {
+                date: new Date().toLocaleString('ar-EG'), // التاريخ التلقائي
+                ticker,
+                qty,
+                price,
+                type
+            };
+
+            trades.unshift(newTrade); // إضافة في البداية
+            renderTrades();
+            
+            // مسح الحقول بعد الإضافة
+            document.getElementById('tickerInput').value = '';
+            document.getElementById('qtyInput').value = '';
+            document.getElementById('priceInput').value = '';
+        }
+
+        const deleteTrade = (index) => {
+            if (confirm('هل أنت متأكد من حذف هذه العملية بالكامل؟')) {
+                trades.splice(index, 1);
+                renderTrades();
+            }
+        }
+
+        let myChart;
+        const updateChart = () => {
+            const ctx = document.getElementById('miniChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trades.map(t => t.date).reverse(),
+                    datasets: [{
+                        label: 'حجم العمليات',
+                        data: trades.map(t => t.qty * t.price).reverse(),
+                        borderColor: '#10b981',
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+            });
+        }
+
+        // التشغيل الأولي
+        renderTrades();
     </script>
 </body>
 </html>
