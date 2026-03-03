@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سجل التوزيعات - Retirement Project</title>
+    
+    <script src="assets/js/auth.js"></script>
+    <script>
+        authManager.protectPage();
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="assets/data/tickers.js"></script>
+    <script src="assets/js/validation.js"></script>
     
     <script>
         tailwind.config = {
@@ -23,13 +30,15 @@
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
         body { font-family: 'Tajawal', sans-serif; background-color: #001f3f; color: #f3f4f6; }
         
-        /* تحسين استايل الحقول ليكون النص واضحاً جداً */
         .input-premium { 
             @apply bg-navy-800 border border-navy-600 rounded-2xl p-3 text-sm text-white w-full transition-all duration-300;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
         }
         .input-premium:focus { 
             @apply border-blue-500 bg-navy-700 ring-2 ring-blue-500/20 outline-none;
+        }
+        .input-premium.error {
+            @apply border-red-500 ring-2 ring-red-500/20;
         }
         .month-label { @apply text-[11px] font-bold text-blue-300/70 mb-1 block mr-1 uppercase tracking-tighter; }
         
@@ -48,6 +57,8 @@
             <a href="index.html" class="px-4 py-2 hover:text-blue-400 transition">الرئيسية 🏠</a>
             <a href="trade-log.html" class="px-4 py-2 hover:text-blue-400 transition">سجل التداول 📝</a>
             <a href="dividends.html" class="px-4 py-2 text-blue-400 border-b-2 border-blue-400 pb-1">التوزيعات 💵</a>
+            <a href="investment-roadmap.html" class="px-4 py-2 hover:text-blue-400 transition">خارطة الطريق 🗺️</a>
+            <a href="settings.html" class="px-4 py-2 hover:text-blue-400 transition">الإعدادات ⚙️</a>
         </div>
     </nav>
 
@@ -57,8 +68,8 @@
             <h3 class="text-3xl font-black text-white" id="stat-total-all">0.00</h3>
         </div>
         <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl">
-            <p class="text-blue-300 text-xs font-bold mb-1 uppercase tracking-widest">توزيعات عام 2025 📅</p>
-            <h3 class="text-2xl font-bold text-white" id="stat-total-2025">0.00</h3>
+            <p class="text-blue-300 text-xs font-bold mb-1 uppercase tracking-widest">توزيعات عام 2026 📅</p>
+            <h3 class="text-2xl font-bold text-white" id="stat-total-2026">0.00</h3>
         </div>
         <div class="bg-navy-700 p-6 rounded-3xl border border-navy-600 shadow-xl text-center flex flex-col justify-center">
             <p class="text-amber-400 text-[10px] font-black mb-2 uppercase tracking-widest">🏆 أفضل الشركات توزيعاً</p>
@@ -91,53 +102,70 @@
         </div>
 
         <div class="p-8">
-            <div class="flex flex-col md:flex-row gap-6 mb-10 pb-8 border-b border-navy-700/50">
-                <div class="flex-1">
-                    <label class="text-xs font-black text-blue-400 mb-2 flex items-center gap-2 pr-1 uppercase">
-                        📅 السنة المالية
-                    </label>
-                    <input type="number" id="yearIn" placeholder="مثال: 2025" class="input-premium text-lg font-black tracking-widest">
+            <form id="dividendForm">
+                <div class="flex flex-col md:flex-row gap-6 mb-10 pb-8 border-b border-navy-700/50">
+                    <div class="flex-1">
+                        <label class="text-xs font-black text-blue-400 mb-2 flex items-center gap-2 pr-1 uppercase">
+                            📅 السنة المالية
+                        </label>
+                        <input type="number" id="yearIn" placeholder="مثال: 2026" class="input-premium text-lg font-black tracking-widest" min="2020" max="2050">
+                        <p class="text-red-400 text-xs mt-1 hidden" id="year-error">السنة يجب أن تكون بين 2020-2050</p>
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs font-black text-blue-400 mb-2 flex items-center gap-2 pr-1 uppercase">
+                            🆔 كود السهم (Ticker)
+                        </label>
+                        <input type="text" id="tickerIn" placeholder="مثال: 2222" class="input-premium text-lg font-black tracking-widest" maxlength="4" pattern="[0-9]{4}">
+                        <p class="text-red-400 text-xs mt-1 hidden" id="ticker-error">كود السهم يجب أن يكون 4 أرقام</p>
+                    </div>
+                    <div class="flex-1 flex items-end">
+                        <div class="w-full bg-navy-800/30 p-4 rounded-2xl border border-navy-700">
+                            <p class="text-gray-500 text-xs mb-1">الشركة المختارة</p>
+                            <p id="selected-company" class="text-white font-black text-sm">-</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <label class="text-xs font-black text-blue-400 mb-2 flex items-center gap-2 pr-1 uppercase">
-                        🆔 كود السهم (Ticker)
-                    </label>
-                    <input type="text" id="tickerIn" placeholder="مثال: 2222" class="input-premium text-lg font-black tracking-widest">
-                </div>
-                <div class="hidden lg:block flex-[2]"></div> </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
-                    <div><label class="month-label">1 - يناير</label><input type="number" id="m1" value="0" class="input-premium font-bold"></div>
-                    <div><label class="month-label">2 - فبراير</label><input type="number" id="m2" value="0" class="input-premium font-bold"></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                    <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
+                        <div><label class="month-label">1 - يناير</label><input type="number" id="m1" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                        <div><label class="month-label">2 - فبراير</label><input type="number" id="m2" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                    </div>
+                    <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
+                        <div><label class="month-label">3 - مارس</label><input type="number" id="m3" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                        <div><label class="month-label">4 - أبريل</label><input type="number" id="m4" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                    </div>
+                    <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
+                        <div><label class="month-label">5 - مايو</label><input type="number" id="m5" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                        <div><label class="month-label">6 - يونيو</label><input type="number" id="m6" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                    </div>
+                    <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
+                        <div><label class="month-label">7 - يوليو</label><input type="number" id="m7" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                        <div><label class="month-label">8 - أغسطس</label><input type="number" id="m8" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                    </div>
+                    <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
+                        <div><label class="month-label">9 - سبتمبر</label><input type="number" id="m9" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                        <div><label class="month-label">10 - أكتوبر</label><input type="number" id="m10" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                    </div>
+                    <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
+                        <div><label class="month-label">11 - نوفمبر</label><input type="number" id="m11" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                        <div><label class="month-label">12 - ديسمبر</label><input type="number" id="m12" value="0" class="input-premium font-bold" step="0.01" min="0"></div>
+                    </div>
                 </div>
-                <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
-                    <div><label class="month-label">3 - مارس</label><input type="number" id="m3" value="0" class="input-premium font-bold"></div>
-                    <div><label class="month-label">4 - أبريل</label><input type="number" id="m4" value="0" class="input-premium font-bold"></div>
-                </div>
-                <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
-                    <div><label class="month-label">5 - مايو</label><input type="number" id="m5" value="0" class="input-premium font-bold"></div>
-                    <div><label class="month-label">6 - يونيو</label><input type="number" id="m6" value="0" class="input-premium font-bold"></div>
-                </div>
-                <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
-                    <div><label class="month-label">7 - يوليو</label><input type="number" id="m7" value="0" class="input-premium font-bold"></div>
-                    <div><label class="month-label">8 - أغسطس</label><input type="number" id="m8" value="0" class="input-premium font-bold"></div>
-                </div>
-                <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
-                    <div><label class="month-label">9 - سبتمبر</label><input type="number" id="m9" value="0" class="input-premium font-bold"></div>
-                    <div><label class="month-label">10 - أكتوبر</label><input type="number" id="m10" value="0" class="input-premium font-bold"></div>
-                </div>
-                <div class="space-y-3 bg-navy-800/20 p-3 rounded-2xl border border-white/5">
-                    <div><label class="month-label">11 - نوفمبر</label><input type="number" id="m11" value="0" class="input-premium font-bold"></div>
-                    <div><label class="month-label">12 - ديسمبر</label><input type="number" id="m12" value="0" class="input-premium font-bold"></div>
-                </div>
-            </div>
 
-            <div class="mt-10">
-                <button onclick="addDividend()" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-[1.5rem] shadow-[0_10px_20px_-5px_rgba(22,163,74,0.4)] transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-3">
-                    <span class="text-xl">💾</span> حفظ السجل السنوي في المحفظة
-                </button>
-            </div>
+                <div class="mt-8 p-5 bg-navy-800/30 rounded-2xl border border-navy-700">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 text-sm">إجمالي السنة:</span>
+                        <span id="year-total" class="text-green-400 font-black text-2xl">0.00 ر.س</span>
+                    </div>
+                </div>
+
+                <div class="mt-10">
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-[1.5rem] shadow-[0_10px_20px_-5px_rgba(22,163,74,0.4)] transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-3">
+                        <span class="text-xl">💾</span> حفظ السجل السنوي في المحفظة
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -164,17 +192,36 @@
     </div>
 
     <script>
-        // ==========================================
-        // كافة الأكواد البرمجية أدناه بقيت كما هي لضمان استقرار الوظائف
-        // ==========================================
-        
         let records = JSON.parse(localStorage.getItem('myDividends')) || [];
+
+        // Live preview
+        document.getElementById('tickerIn').addEventListener('input', () => {
+            const ticker = document.getElementById('tickerIn').value.trim();
+            if (ticker && tickersMap[ticker]) {
+                document.getElementById('selected-company').textContent = tickersMap[ticker].name;
+            } else {
+                document.getElementById('selected-company').textContent = '-';
+            }
+        });
+
+        // Calculate year total
+        const updateYearTotal = () => {
+            let total = 0;
+            for (let i = 1; i <= 12; i++) {
+                total += parseFloat(document.getElementById(`m${i}`).value) || 0;
+            }
+            document.getElementById('year-total').textContent = total.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ر.س';
+        };
+
+        for (let i = 1; i <= 12; i++) {
+            document.getElementById(`m${i}`).addEventListener('input', updateYearTotal);
+        }
 
         const renderDividends = () => {
             const tableBody = document.getElementById('divTableBody');
             tableBody.innerHTML = '';
             
-            let totalAll = 0, total2025 = 0;
+            let totalAll = 0, total2026 = 0;
             const companyTotals = {};
             const companyHistory = {}; 
 
@@ -183,7 +230,7 @@
                 const rowSum = rec.payouts.reduce((a, b) => a + b, 0);
                 
                 totalAll += rowSum;
-                if(rec.year == 2025) total2025 += rowSum;
+                if(rec.year == 2026) total2026 += rowSum;
 
                 companyTotals[rec.ticker] = (companyTotals[rec.ticker] || 0) + rowSum;
 
@@ -192,7 +239,7 @@
 
                 let monthsHtml = '';
                 rec.payouts.forEach(val => {
-                    monthsHtml += `<td class="p-2 ${val > 0 ? 'text-green-400 font-black' : 'text-gray-700'}">${val > 0 ? val.toFixed(2) : '-'}</td>`;
+                    monthsHtml += `<td class="p-2 ${val > 0 ? 'text-green-400 font-black' : 'text-gray-700'}">${ val > 0 ? val.toFixed(2) : '-'}</td>`;
                 });
 
                 tableBody.innerHTML += `
@@ -209,7 +256,7 @@
             });
 
             document.getElementById('stat-total-all').innerText = totalAll.toLocaleString(undefined, {minimumFractionDigits: 2});
-            document.getElementById('stat-total-2025').innerText = total2025.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('stat-total-2026').innerText = total2026.toLocaleString(undefined, {minimumFractionDigits: 2});
 
             const topList = document.getElementById('top-payers-list');
             topList.innerHTML = '';
@@ -248,20 +295,63 @@
             }
         };
 
-        const addDividend = () => {
-            const year = document.getElementById('yearIn').value;
+        document.getElementById('dividendForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const year = parseInt(document.getElementById('yearIn').value);
             const ticker = document.getElementById('tickerIn').value.trim();
-            if(!year || !ticker) return alert("يا رضوان، فضلاً أدخل السنة والكود أولاً!");
+
+            // Reset errors
+            document.querySelectorAll('.input-premium').forEach(el => el.classList.remove('error'));
+            document.querySelectorAll('[id$="-error"]').forEach(el => el.classList.add('hidden'));
+
+            let hasError = false;
+
+            if (!ValidationHelper.isValidYear(year)) {
+                document.getElementById('yearIn').classList.add('error');
+                document.getElementById('year-error').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (!ValidationHelper.isValidTicker(ticker)) {
+                document.getElementById('tickerIn').classList.add('error');
+                document.getElementById('ticker-error').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (!tickersMap[ticker]) {
+                ValidationHelper.showError('كود السهم غير موجود في القائمة!');
+                document.getElementById('tickerIn').classList.add('error');
+                hasError = true;
+            }
+
+            if (hasError) return;
 
             const payouts = [];
-            for(let i=1; i<=12; i++) { payouts.push(parseFloat(document.getElementById('m'+i).value) || 0); }
+            for(let i=1; i<=12; i++) { 
+                const val = parseFloat(document.getElementById('m'+i).value) || 0;
+                if (!ValidationHelper.isValidAmount(val)) {
+                    ValidationHelper.showError(`قيمة الشهر ${i} غير صحيحة!`);
+                    return;
+                }
+                payouts.push(val); 
+            }
 
-            records.push({ year: parseInt(year), ticker, payouts });
+            records.push({ year, ticker, payouts });
             renderDividends();
             
-            document.getElementById('tickerIn').value = '';
-            for(let i=1; i<=12; i++) { document.getElementById('m'+i).value = 0; }
-        };
+            document.getElementById('dividendForm').reset();
+            updateYearTotal();
+            document.getElementById('selected-company').textContent = '-';
+
+            // Success feedback
+            const btn = document.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ تم الحفظ بنجاح!';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
+        });
 
         const deleteRecord = (idx) => {
             if(confirm('هل أنت متأكد من حذف هذا السجل السنوي؟')) {
