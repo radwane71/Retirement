@@ -3,167 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الدخول - Retirement Project</title>
+    <title>الرئيسية - Retirement Hub</title>
+    
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        navy: {
-                            900: '#001529',
-                            800: '#001f3f',
-                            700: '#002b55',
-                            600: '#003366',
-                        }
+                        navy: { 900: '#001529', 800: '#001f3f', 700: '#002b55', 600: '#003366' }
                     }
                 }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-        body { font-family: 'Tajawal', sans-serif; transition: background 0.5s ease; }
-        /* أنيميشن بسيط لظهور المربعات */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background-color: #001f3f; color: #f3f4f6; }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .fade-in { animation: fadeIn 0.6s ease forwards; }
+        .animate-card { animation: fadeInUp 0.6s ease forwards; }
+        .card-delay-1 { animation-delay: 0.1s; }
+        .card-delay-2 { animation-delay: 0.2s; }
+        .card-delay-3 { animation-delay: 0.3s; }
+        .card-delay-4 { animation-delay: 0.4s; }
+        .card-delay-5 { animation-delay: 0.5s; }
+        .card-delay-6 { animation-delay: 0.6s; }
+
+        .premium-card {
+            @apply bg-navy-900 border border-navy-600 shadow-2xl transition-all duration-500 transform hover:-translate-y-4 hover:border-blue-500/50 flex flex-col items-center justify-center aspect-square w-full max-w-[340px];
+            border-radius: 4rem;
+        }
+        .premium-card:hover { box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 18px 36px -18px rgba(37, 99, 235, 0.3); }
     </style>
 </head>
-<body id="main-body" class="bg-navy-800 text-gray-100 min-h-screen flex items-center justify-center p-4 overflow-x-hidden">
+<body class="min-h-screen flex flex-col items-center justify-center p-6 md:p-12 overflow-x-hidden">
 
-    <div id="login-section" class="w-full max-w-md bg-navy-900 p-8 rounded-3xl shadow-2xl border border-navy-600 transition-all duration-500">
-        <div class="text-center mb-8">
-            <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-blue-900/50">
-                💼
-            </div>
-            <h1 class="text-2xl font-bold text-white tracking-wider uppercase">Retirement <span class="text-blue-400 font-light">Hub</span></h1>
-            <p class="text-gray-400 text-sm mt-2 font-medium">بوابة الإدارة المالية الآمنة</p>
-        </div>
-
-        <form id="login-form" onsubmit="handleLogin(event)">
-            <div class="mb-5">
-                <label class="block text-blue-300 text-xs font-bold mb-2 pr-1" for="username">اسم المستخدم</label>
-                <input id="username" type="text" placeholder="أدخل اسم المستخدم..." 
-                    class="w-full bg-navy-800 text-white border border-navy-600 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner" required>
+    <div class="w-full max-w-7xl mx-auto flex flex-col items-center">
+        
+        <nav class="w-full bg-navy-900/80 backdrop-blur-xl border border-navy-600 p-6 mb-16 flex flex-col md:flex-row justify-between items-center rounded-[2.5rem] shadow-2xl">
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-600 p-3 rounded-2xl text-2xl shadow-lg shadow-blue-900/40">💼</div>
+                <div>
+                    <h1 class="text-2xl font-black text-white uppercase tracking-tighter">Retirement <span class="text-blue-400 font-light">Hub</span></h1>
+                    <p class="text-[9px] text-blue-300/50 font-bold uppercase tracking-[0.4em]">Wealth Management System</p>
+                </div>
             </div>
             
-            <div class="mb-6">
-                <label class="block text-blue-300 text-xs font-bold mb-2 pr-1" for="password">كلمة المرور</label>
-                <input id="password" type="password" placeholder="أدخل كلمة المرور..." 
-                    class="w-full bg-navy-800 text-white border border-navy-600 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner" required>
-            </div>
-
-            <div id="error-msg" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl mb-6 text-xs text-center font-bold">
-                ⚠️ بيانات الدخول غير صحيحة، يرجى المحاولة مجدداً.
-            </div>
-
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-lg active:scale-95 flex justify-center items-center gap-2">
-                دخول النظام الآمن 🔐
-            </button>
-        </form>
-    </div>
-
-    <div id="main-hub-section" class="hidden w-full max-w-6xl mx-auto flex flex-col items-center">
-        
-        <nav class="w-full bg-navy-900 border-b border-navy-600 p-4 mb-10 flex flex-col md:flex-row justify-between items-center rounded-2xl shadow-2xl">
-            <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2 rounded-lg text-xl shadow-lg">💼</div>
-                <h1 class="text-2xl font-bold tracking-tight text-white uppercase">Retirement <span class="text-blue-400 font-light text-lg">Hub</span></h1>
-            </div>
-            <div class="mt-4 md:mt-0 flex items-center gap-6">
-                <span class="text-sm text-gray-300">مرحباً، <span class="text-blue-400 font-black">رضوان الجهني</span> 👋</span>
-                <button onclick="logout()" class="bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/30 px-5 py-2 rounded-xl text-xs transition font-black uppercase">
+            <div class="mt-6 md:mt-0 flex items-center gap-8">
+                <div class="flex flex-col items-end">
+                    <span class="text-xs text-gray-400 font-bold uppercase tracking-widest">أهلاً بك</span>
+                    <span class="text-sm text-blue-400 font-black italic">رضوان الجهني 👋</span>
+                </div>
+                <button onclick="logout()" class="bg-red-500/10 text-red-500 hover:bg-red-600 hover:text-white border border-red-500/20 px-8 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300">
                     خروج
                 </button>
             </div>
         </nav>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full px-4 md:px-0 justify-items-center fade-in">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 w-full justify-items-center">
             
-            <a href="trade-log.html" class="group bg-navy-900 p-10 rounded-[2.5rem] border border-navy-600 shadow-xl hover:border-blue-500 hover:shadow-blue-900/40 transition-all duration-500 transform hover:-translate-y-3 flex flex-col items-center justify-center aspect-square w-full max-w-[320px]">
-                <div class="text-6xl mb-6 group-hover:scale-125 transition-transform duration-500">📝</div>
-                <h2 class="text-2xl font-black text-white mb-2">سجل التداول</h2>
-                <p class="text-gray-400 text-[11px] text-center font-medium leading-relaxed">إدارة عمليات الشراء والبيع والعمولات والضرائب</p>
-                <span class="mt-4 text-[10px] bg-green-500/10 text-green-400 px-3 py-1 rounded-full border border-green-500/20">جاهز للعمل</span>
+            <a href="trade-log.html" class="premium-card animate-card card-delay-1 group">
+                <div class="text-8xl mb-8 group-hover:scale-110 transition-transform duration-500">📝</div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tighter">سجل التداول</h2>
+                <p class="text-gray-500 text-[10px] text-center mt-4 px-8 font-bold leading-relaxed uppercase tracking-[0.2em]">Trade Execution Log</p>
+                <div class="mt-6 h-1 w-12 bg-blue-600 rounded-full group-hover:w-24 transition-all"></div>
             </a>
 
-            <a href="dividends.html" class="group bg-navy-900 p-10 rounded-[2.5rem] border border-navy-600 shadow-xl hover:border-blue-500 hover:shadow-blue-900/40 transition-all duration-500 transform hover:-translate-y-3 flex flex-col items-center justify-center aspect-square w-full max-w-[320px]">
-                <div class="text-6xl mb-6 group-hover:scale-125 transition-transform duration-500">💵</div>
-                <h2 class="text-2xl font-black text-white mb-2">التوزيعات</h2>
-                <p class="text-gray-400 text-[11px] text-center font-medium leading-relaxed">تتبع الدخل المحقق ومراقبة انخفاض التوزيعات</p>
-                <span class="mt-4 text-[10px] bg-green-500/10 text-green-400 px-3 py-1 rounded-full border border-green-500/20">جاهز للعمل</span>
+            <a href="dividends.html" class="premium-card animate-card card-delay-2 group">
+                <div class="text-8xl mb-8 group-hover:scale-110 transition-transform duration-500 font-bold">💵</div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tighter">التوزيعات النقدية</h2>
+                <p class="text-gray-500 text-[10px] text-center mt-4 px-8 font-bold leading-relaxed uppercase tracking-[0.2em]">Dividend Tracker</p>
+                <div class="mt-6 h-1 w-12 bg-green-500 rounded-full group-hover:w-24 transition-all"></div>
             </a>
 
-            <a href="investment-roadmap.html" class="group bg-navy-900 p-10 rounded-[2.5rem] border border-navy-600 shadow-xl hover:border-blue-500 hover:shadow-blue-900/40 transition-all duration-500 transform hover:-translate-y-3 flex flex-col items-center justify-center aspect-square w-full max-w-[320px]">
-                <div class="text-6xl mb-6 group-hover:scale-125 transition-transform duration-500">🗺️</div>
-                <h2 class="text-2xl font-black text-white mb-2">خارطة الطريق</h2>
-                <p class="text-gray-400 text-[11px] text-center font-medium leading-relaxed">خطة الضخ المالي المستقبلية ومتابعة الإنجاز</p>
-                <span class="mt-4 text-[10px] bg-green-500/10 text-green-400 px-3 py-1 rounded-full border border-green-500/20">جاهز للعمل</span>
+            <a href="investment-roadmap.html" class="premium-card animate-card card-delay-3 group">
+                <div class="text-8xl mb-8 group-hover:scale-110 transition-transform duration-500">🗺️</div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tighter">خارطة الطريق</h2>
+                <p class="text-gray-500 text-[10px] text-center mt-4 px-8 font-bold leading-relaxed uppercase tracking-[0.2em]">Investment Roadmap</p>
+                <div class="mt-6 h-1 w-12 bg-amber-500 rounded-full group-hover:w-24 transition-all"></div>
             </a>
 
-            <a href="#" class="group opacity-70 bg-navy-900/50 p-10 rounded-[2.5rem] border border-navy-600 flex flex-col items-center justify-center aspect-square w-full max-w-[320px] cursor-not-allowed">
-                <div class="text-6xl mb-6 grayscale group-hover:grayscale-0 transition-all">🏦</div>
-                <h2 class="text-2xl font-black text-white/50 mb-2">المحفظة</h2>
-                <p class="text-gray-500 text-[11px] text-center">نظرة عامة شاملة للأصول والنمو</p>
-                <span class="mt-4 text-[10px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 italic">قيد البرمجة...</span>
+            <a href="#" class="premium-card animate-card card-delay-4 group opacity-60 hover:opacity-100 grayscale hover:grayscale-0">
+                <div class="text-8xl mb-8 group-hover:rotate-6 transition-transform">🏦</div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tighter text-white/50">المحفظة</h2>
+                <p class="text-gray-500 text-[10px] text-center mt-4 px-8 font-bold uppercase tracking-[0.2em]">Portfolio Overview</p>
+                <span class="absolute top-8 right-8 text-[9px] bg-navy-800 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-black">SOON</span>
             </a>
 
-            <a href="#" class="group opacity-70 bg-navy-900/50 p-10 rounded-[2.5rem] border border-navy-600 flex flex-col items-center justify-center aspect-square w-full max-w-[320px] cursor-not-allowed">
-                <div class="text-6xl mb-6 grayscale">📈</div>
-                <h2 class="text-2xl font-black text-white/50 mb-2">صافي الثروة</h2>
-                <p class="text-gray-500 text-[11px] text-center">المركز المالي الشامل (الأصول والخصوم)</p>
-                <span class="mt-4 text-[10px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 italic">قيد البرمجة...</span>
+            <a href="#" class="premium-card animate-card card-delay-5 group opacity-60 hover:opacity-100 grayscale hover:grayscale-0">
+                <div class="text-8xl mb-8 group-hover:scale-110 transition-transform">📈</div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tighter text-white/50">صافي الثروة</h2>
+                <p class="text-gray-500 text-[10px] text-center mt-4 px-8 font-bold uppercase tracking-[0.2em]">Net Worth Analysis</p>
+                <span class="absolute top-8 right-8 text-[9px] bg-navy-800 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-black">SOON</span>
             </a>
 
-            <a href="#" class="group opacity-70 bg-navy-900/50 p-10 rounded-[2.5rem] border border-navy-600 flex flex-col items-center justify-center aspect-square w-full max-w-[320px] cursor-not-allowed">
-                <div class="text-6xl mb-6 grayscale">🏠</div>
-                <h2 class="text-2xl font-black text-white/50 mb-2">الأصول العقارية</h2>
-                <p class="text-gray-500 text-[11px] text-center">إدارة الاستثمارات العقارية وتطويرها</p>
-                <span class="mt-4 text-[10px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 italic">قيد البرمجة...</span>
+            <a href="#" class="premium-card animate-card card-delay-6 group opacity-60 hover:opacity-100 grayscale hover:grayscale-0">
+                <div class="text-8xl mb-8 group-hover:scale-110 transition-transform">🏠</div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tighter text-white/50">العقارات</h2>
+                <p class="text-gray-500 text-[10px] text-center mt-4 px-8 font-bold uppercase tracking-[0.2em]">Real Estate Assets</p>
+                <span class="absolute top-8 right-8 text-[9px] bg-navy-800 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-black">SOON</span>
             </a>
 
         </div>
-        
-        <footer class="mt-16 text-gray-500 text-[10px] font-bold tracking-widest uppercase pb-8">
-            © 2026 Retirement Project | Built for Excellence
+
+        <footer class="mt-24 text-gray-600 flex flex-col items-center gap-4 pb-12">
+            <div class="h-[1px] w-24 bg-navy-600 mb-4"></div>
+            <p class="text-[10px] font-black tracking-[0.5em] uppercase text-blue-400/30">© 2026 Retirement Project</p>
+            <p class="text-[9px] font-bold text-gray-700 italic">"Protect Capital First, Dividends Second, Growth Third"</p>
         </footer>
     </div>
 
     <script>
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const errorMsg = document.getElementById('error-msg');
-            
-            // بيانات الدخول الخاصة بك
-            if (user === 'radwan aljohani' && pass === '1117473137') {
-                // إخفاء صفحة الدخول وإظهار الواجهة الرئيسية
-                document.getElementById('login-section').classList.add('hidden', 'opacity-0');
-                
-                // تأخير بسيط لإظهار الأنيميشن
-                setTimeout(() => {
-                    document.getElementById('main-hub-section').classList.remove('hidden');
-                    // ضبط محاذاة الجسم ليكون المحتوى في الأعلى ومنتصف الشاشة
-                    document.getElementById('main-body').classList.remove('items-center', 'justify-center');
-                    document.getElementById('main-body').classList.add('items-start', 'pt-10');
-                }, 300);
-                
-                errorMsg.classList.add('hidden');
-            } else {
-                errorMsg.classList.remove('hidden');
-                // اهتزاز بسيط للتنبيه بالخطأ
-                document.getElementById('login-section').classList.add('translate-x-1');
-                setTimeout(() => document.getElementById('login-section').classList.remove('translate-x-1'), 100);
-            }
-        }
-
         function logout() {
-            location.reload(); // أسهل طريقة لإعادة تصفير الحالة والعودة للدخول
+            sessionStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
         }
     </script>
 </body>
